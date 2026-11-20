@@ -1,0 +1,31 @@
+services:
+  metasploit-pro-mcp:
+    build: .
+    image: metasploit-pro-mcp:1.0.0
+    container_name: metasploit-pro-mcp
+    restart: unless-stopped
+
+    # Toàn bộ cấu hình (API key, bearer token, cờ exploit, host...) nằm trong .env
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+
+    # 0.0.0.0 = có thể kết nối từ bất kỳ đâu
+    ports:
+      - "0.0.0.0:8080:8080"
+
+    # Cho phép container truy cập localhost:3790 của máy host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
